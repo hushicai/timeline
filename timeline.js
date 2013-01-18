@@ -14,11 +14,13 @@ var Timeline = function(options) {
 
     // public vars
     // 持续时间
-    this.duration = options.duration === undefined ? Infinity : options.duration;
+    this.duration = options.duration || Infinity;
     // 变换方向
-    this.direction = options.direction === undefined ? 1 : options.direction;
+    this.direction = options.direction || 1;
     // 50 ~ 60 fps is recommended
-    this.fps = options.fps === undefined ? 50 : options.fps;
+    this.fps = options.fps || 50;
+    // 偏移时间
+    this.offset = options.offset || 0;
 
     // private functions
 
@@ -62,12 +64,13 @@ var Timeline = function(options) {
 // public functions
 Timeline.prototype = {
     constructor: Timeline,
-    start: function() {
+    start: function(offset) {
         var running = this.getRunning(),
             interval,
             me = this;
 
         if(!running) {
+            this.offset = offset || 0;
             this.setRunning(true);
             this.setStartTime(new Date().getTime());
             this.setPercent(0);
@@ -93,7 +96,7 @@ Timeline.prototype = {
     },
     step: function() {
         var startTime = this.getStartTime(),
-            spend = new Date().getTime() - startTime,
+            spend = new Date().getTime() - startTime + this.offset,
             duration = this.duration,
             percent = spend < duration ? ((spend % duration) / duration) : 1;
 
@@ -113,6 +116,23 @@ Timeline.prototype = {
 
             this.onstep(duration);
             this.oncomplete();
+        }
+    },
+    resume: function() {
+        var percent = this.getPercent();
+
+        return this.start(percent * this.duration);
+    },
+    turn: function(direction) {
+        var same = this.direction == direction,
+            running = this.getRunning(),
+            percent = this.getPercent();
+
+        this.direction = direction;
+
+        if(!same && running) {
+            this.stop();
+            this.start(this.duration * (1 - percent));
         }
     }
 };

@@ -8,12 +8,17 @@
     <script src="timeline.js" type="text/javascript"></script>
     <script type="text/javascript">
         var timeline1 = new Timeline({
-            duration: 500,
+            duration: 5000,
+            fps: 10,
             onstep: function(spended) {
                 console.log('timeline1', this.getPercent());
+
+                if(this.getPercent() >= 0.5) {
+                    this.turn(-1);
+                }
             },
             oncomplete: function() {
-                timeline2.start();   // next timeline
+                timeline2.start();   
             }
         });
         var timeline2 = new Timeline({
@@ -21,20 +26,21 @@
             onstep: function(spended) {
                 console.log('timeline2', this.getPercent());
             },
-            oncomplete: function() {}
+            oncomplete: function() {
+                main.start();
+            }
         });
 
         var main = new Timeline({
             duration: 5000,
             onstart: function() {
                 console.log('-------------------------new main timeline------------------------');
-                timeline1.start();
             },
             oncomplete: function() {
-                main.start();    // another cycle
+                timeline1.start();
             }
         });
-        main.start();
+//        main.start();
     </script>
 </body>
 </html>
